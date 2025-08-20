@@ -26,6 +26,8 @@ build:
 release:
 	$(ANT) release
 
+deploy: key release installr start
+
 install: installd
 installr:
 	$(ANT) installr
