@@ -1,3 +1,5 @@
+ANT = /usr/bin/ant
+
 KEYSTORE_FILE = .keystore/meu-release-key.keystore
 ALIAS         = minha-chave
 KEYSTORE_PASS = senha123
@@ -20,22 +22,22 @@ KEYTOOL_OPT   = -genkeypair \
 				-v
 
 build:
-	ant debug
+	$(ANT) debug
 release:
-	ant release
+	$(ANT) release
 
 install: installd
 installr:
-	ant installr
+	$(ANT) installr
 installd:
-	ant installd
+	$(ANT) installd
 uninstall:
 	adb uninstall `xmlstarlet select -T -t -v "//manifest/@package" -n AndroidManifest.xml`
 start:
 	adb shell am start -n `xmlstarlet select -T -t -v "//manifest/@package" -n AndroidManifest.xml`/`xmlstarlet select -T -t -v "//manifest/@package" -n AndroidManifest.xml`.`xmlstarlet select -T -t -v "//application/activity/@android:name" -n AndroidManifest.xml`
 clean:
 	rm -rf .keystore
-	ant clean
+	$(ANT) clean
 key:
 	mkdir .keystore
 	keytool  $(KEYTOOL_OPT)
