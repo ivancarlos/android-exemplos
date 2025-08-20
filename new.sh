@@ -10,18 +10,17 @@
 DEFAULT_TARGET="2"
 DEFAULT_NAME="MyApp"
 DEFAULT_ACTIVITY="MainActivity"
-DEFAULT_PACKAGE="com.example.myapp"
+DEFAULT_PACKAGE="br.eng.ivanlopes.myapp"
 DEFAULT_PATH="$PWD"
-
 # Verificar dependências
 check_dependencies() {
     local missing_deps=()
 
-    if ! command -v dialog &> /dev/null; then
+    if ! command -v dialog &>/dev/null; then
         missing_deps+=("dialog")
     fi
 
-    if ! command -v android &> /dev/null; then
+    if ! command -v android &>/dev/null; then
         dialog --msgbox "ERRO: Comando 'android' não encontrado!\n\nVerifique se \$ANDROID_HOME/tools está no \$PATH\n\nAtual ANDROID_HOME: $ANDROID_HOME" 12 70
         exit 1
     fi
@@ -35,8 +34,8 @@ check_dependencies() {
 
 # Listar targets disponíveis
 get_targets() {
-    android list targets 2>/dev/null | grep -E "^id:|Name:|API level:" | \
-    awk '
+    android list targets 2>/dev/null | grep -E "^id:|Name:|API level:" |
+        awk '
     /^id:/ { id = $2; getline; name = $0; getline; api = $0;
              gsub(/^[ \t]*Name: /, "", name);
              gsub(/^[ \t]*API level: /, "", api);
@@ -75,18 +74,18 @@ validate_activity_name() {
 main_menu() {
     while true; do
         choice=$(dialog --clear --backtitle "Criador de Projetos Android v1.0" \
-                       --title "Menu Principal" \
-                       --menu "Escolha uma opção:" 16 70 9 \
-                       1 "Configurar target Android ($target)" \
-                       2 "Configurar nome do projeto ($project_name)" \
-                       3 "Configurar diretório base ($base_path)" \
-                       4 "Configurar activity principal ($activity_name)" \
-                       5 "Configurar package name ($package_name)" \
-                       6 "Listar targets disponíveis" \
-                       7 "Visualizar configurações" \
-                       8 "Criar projeto" \
-                       9 "Sair" \
-                       2>&1 >/dev/tty)
+            --title "Menu Principal" \
+            --menu "Escolha uma opção:" 16 70 9 \
+            1 "Configurar target Android ($target)" \
+            2 "Configurar nome do projeto ($project_name)" \
+            3 "Configurar diretório base ($base_path)" \
+            4 "Configurar activity principal ($activity_name)" \
+            5 "Configurar package name ($package_name)" \
+            6 "Listar targets disponíveis" \
+            7 "Visualizar configurações" \
+            8 "Criar projeto" \
+            9 "Sair" \
+            2>&1 >/dev/tty)
 
         case $choice in
             1) configure_target ;;
@@ -191,7 +190,7 @@ configure_package() {
 
 # Listar targets
 list_targets() {
-    android list targets > /tmp/android_targets.txt 2>&1
+    android list targets >/tmp/android_targets.txt 2>&1
     dialog --textbox /tmp/android_targets.txt 20 80
     rm -f /tmp/android_targets.txt
 }
@@ -253,14 +252,38 @@ create_project() {
     if [ $? -eq 0 ]; then
         dialog --msgbox "Projeto criado com sucesso!\n\nLocalização: $project_path\n\nPara compilar:\ncd $project_path\nant debug" 10 60
 
+        cat <<EOF >${project_path}/Makefile
+LINUXBREW_HOME = /home/linuxbrew/.linuxbrew
+ANT  =  /usr/bin/ant
+JENV =	\$(LINUXBREW_HOME)/bin/jenv
+
+PACKAGE = \`xmlstarlet select -T -t -v "//manifest/@package" -n AndroidManifest.xml\`
+MAINACTIVITY = \`xmlstarlet select -T -t -v "//manifest/@package" -n AndroidManifest.xml\`.\`xmlstarlet select -T -t -v "//application/activity/@android:name" -n AndroidManifest.xml\`
+
+status:
+	\$(ANT) -version
+	\$(JENV) version
+
+build:
+	\$(ANT) debug
+install:
+	\$(ANT) installd
+uninstall:
+	adb uninstall \$(PACKAGE)
+start:
+	adb shell am start -n \$(PACKAGE)/\$(MAINACTIVITY)
+clean:
+	ant clean
+
+EOF
         # Perguntar se quer abrir o diretório
         dialog --yesno "Abrir o diretório do projeto no gerenciador de arquivos?" 8 50
         if [ $? -eq 0 ]; then
-            if command -v nautilus &> /dev/null; then
+            if command -v nautilus &>/dev/null; then
                 nautilus "$project_path" &
-            elif command -v dolphin &> /dev/null; then
+            elif command -v dolphin &>/dev/null; then
                 dolphin "$project_path" &
-            elif command -v thunar &> /dev/null; then
+            elif command -v thunar &>/dev/null; then
                 thunar "$project_path" &
             fi
         fi
@@ -291,3 +314,4 @@ Pressione ENTER para continuar..." 10 70
 main_menu
 
 exit 0
+
