@@ -14,6 +14,7 @@ ln -s local.properties AndEngineScriptingExtension/
 ln -s local.properties AndEngineSVGTextureRegionExtension/
 ln -s local.properties AndEngineTexturePackerExtension/
 ln -s local.properties AndEngineTMXTiledMapExtension/
+
 ln -s local.properties examples/01-SoundExample/
 ln -s local.properties examples/02-SoundExample/
 
