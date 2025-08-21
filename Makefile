@@ -4,7 +4,7 @@ debug:
 release:
 	./new.$@.sh
 main:
-	./github.$@.expect
+	./github.main.expect $(shell git rev-parse --abbrev-ref HEAD)
 push:
 	./github.$@.expect
 
