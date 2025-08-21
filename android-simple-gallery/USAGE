@@ -1,0 +1,13 @@
+
+# load sdk
+xenv
+
+make update
+make build
+make install
+make start
+
+make unistall
+
+
+
