@@ -256,4 +256,4 @@ convert -size ${width}x${height} xc:white \
 
 echo "Plano cartesiano gerado: ${image_name}.${image_format}"
 
-eog ${image_name}.${image_format}
+echo eog ${image_name}.${image_format}
