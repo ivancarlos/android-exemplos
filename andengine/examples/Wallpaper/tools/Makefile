@@ -1,5 +1,8 @@
-width = 720
-height= 1280
+#width = 720
+#height= 1280
+
+width = 120
+height= 120
 
 gride:
 	./cartesian_plane_grid.sh
