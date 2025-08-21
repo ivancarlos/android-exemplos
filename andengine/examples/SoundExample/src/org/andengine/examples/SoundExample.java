@@ -18,10 +18,8 @@ import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.TextureOptions;
-import org.andengine.opengl.texture.atlas.bitmap.BuildableBitmapTextureAtlas;
+import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
-import org.andengine.opengl.texture.atlas.buildable.builder.BlackPawnTextureAtlasBuilder;
-import org.andengine.opengl.texture.atlas.buildable.builder.ITextureAtlasBuilder.TextureAtlasBuilderException;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.debug.Debug;
@@ -29,9 +27,8 @@ import org.andengine.util.debug.Debug;
 import android.widget.Toast;
 
 /**
- * Várias imagens clicáveis, cada uma com um som diferente.
- * - Defina seus itens na lista ITEMS (arquivo de imagem, arquivo de som, posição X/Y).
- * - Não cria imagens nem áudios; apenas organiza o código.
+ * 3 imagens clicáveis, cada uma com seu som.
+ * Mantém o estilo do seu código original.
  */
 public class SoundExample extends SimpleBaseGameActivity {
 
@@ -42,32 +39,26 @@ public class SoundExample extends SimpleBaseGameActivity {
     private static final int CAMERA_WIDTH = 720;
     private static final int CAMERA_HEIGHT = 480;
 
-    // Pastas de assets
     private static final String GRAPHICS_PATH = "gfx/";
     private static final String SOUNDS_PATH  = "mfx/";
 
-    // Tamanho do atlas (aumente se tiver muitas/maiores imagens)
-    private static final int ATLAS_WIDTH  = 1024;
-    private static final int ATLAS_HEIGHT = 1024;
-
-    // Cor de fundo
-    private static final float BG_R = 0.09804f;
-    private static final float BG_G = 0.6274f;
-    private static final float BG_B = 0.8784f;
+    // Cores de fundo
+    private static final float BACKGROUND_RED   = 0.09804f;
+    private static final float BACKGROUND_GREEN = 0.6274f;
+    private static final float BACKGROUND_BLUE  = 0.8784f;
 
     // ===========================================================
-    // TIPOS/ESTRUTURAS
+    // ESTRUTURA PARA ITENS
     // ===========================================================
 
-    /** Define um item clicável (imagem + som + posição) */
     private static class ItemDef {
         final String imageFile;
         final String soundFile;
-        final float x;
-        final float y;
+        final float x, y;
 
-        // preenchidos em tempo de execução:
-        ITextureRegion textureRegion;
+        // preenchidos em runtime
+        BitmapTextureAtlas atlas;
+        ITextureRegion texture;
         Sound sound;
         Sprite sprite;
 
@@ -79,7 +70,7 @@ public class SoundExample extends SimpleBaseGameActivity {
         }
     }
 
-    // Configure aqui os itens (exemplos; ajuste os nomes/posições aos seus arquivos)
+    // Sua lista pedida: 3 imagens clicáveis
     private final List<ItemDef> ITEMS = new ArrayList<ItemDef>() {{
         add(new ItemDef("tank.png",       "explosion.ogg",   100, 200));
         add(new ItemDef("helicopter.png", "helicopter.ogg",  300, 120));
@@ -90,7 +81,7 @@ public class SoundExample extends SimpleBaseGameActivity {
     // CAMPOS
     // ===========================================================
 
-    private BuildableBitmapTextureAtlas mTextureAtlas;
+    // (removemos os campos únicos antigos e passamos a usar a lista ITEMS)
 
     // ===========================================================
     // ENGINE
@@ -101,14 +92,12 @@ public class SoundExample extends SimpleBaseGameActivity {
         showInstructions();
 
         final Camera camera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
-
         final EngineOptions engineOptions = new EngineOptions(
                 true,
                 ScreenOrientation.LANDSCAPE_FIXED,
                 new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT),
                 camera
         );
-
         engineOptions.getAudioOptions().setNeedsSound(true);
         return engineOptions;
     }
@@ -126,28 +115,24 @@ public class SoundExample extends SimpleBaseGameActivity {
     private void loadGraphics() {
         BitmapTextureAtlasTextureRegionFactory.setAssetBasePath(GRAPHICS_PATH);
 
-        mTextureAtlas = new BuildableBitmapTextureAtlas(
-                getTextureManager(),
-                ATLAS_WIDTH,
-                ATLAS_HEIGHT,
-                TextureOptions.BILINEAR
-        );
-
-        // cria uma região de textura para cada imagem de item
+        // Para evitar BlackPawn builder, criamos 1 atlas por imagem.
+        // Tamanho 256x256 costuma servir para ícones médios; aumente se necessário.
         for (ItemDef item : ITEMS) {
-            item.textureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
-                    mTextureAtlas, this, item.imageFile);
+            item.atlas = new BitmapTextureAtlas(
+                    getTextureManager(),
+                    256, 256,
+                    TextureOptions.BILINEAR
+            );
+
+            // Posiciona a textura dentro do atlas no canto (0,0) de cada atlas
+            item.texture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
+                    item.atlas, this, item.imageFile, 0, 0
+            );
+
+            item.atlas.load();
         }
 
-        try {
-            // empacota as imagens no atlas automaticamente
-            mTextureAtlas.build(new BlackPawnTextureAtlasBuilder<BuildableBitmapTextureAtlas>(0, 1, 1));
-            mTextureAtlas.load();
-            Debug.d("Texturas carregadas/empacotadas.");
-        } catch (TextureAtlasBuilderException e) {
-            Debug.e("Falha ao construir atlas de texturas.", e);
-            showError("Erro ao carregar gráficos. Verifique os arquivos em /assets/gfx.");
-        }
+        Debug.d("Gráficos carregados para " + ITEMS.size() + " itens.");
     }
 
     private void loadSounds() {
@@ -156,12 +141,14 @@ public class SoundExample extends SimpleBaseGameActivity {
         for (ItemDef item : ITEMS) {
             try {
                 item.sound = SoundFactory.createSoundFromAsset(
-                        getSoundManager(), this, item.soundFile);
+                        mEngine.getSoundManager(), this, item.soundFile
+                );
             } catch (IOException e) {
                 Debug.e("Erro ao carregar som: " + item.soundFile, e);
-                showError("Não foi possível carregar: " + item.soundFile);
+                showError("Falha ao carregar " + item.soundFile);
             }
         }
+
         Debug.d("Sons carregados.");
     }
 
@@ -174,35 +161,38 @@ public class SoundExample extends SimpleBaseGameActivity {
         mEngine.registerUpdateHandler(new FPSLogger());
 
         final Scene scene = new Scene();
-        scene.setBackground(new Background(BG_R, BG_G, BG_B));
+        scene.setBackground(new Background(BACKGROUND_RED, BACKGROUND_GREEN, BACKGROUND_BLUE));
 
-        // cria sprites para cada item
+        // Cria e posiciona os sprites
         for (ItemDef item : ITEMS) {
-            if (item.textureRegion == null) continue;
+            if (item.texture == null) continue;
 
             item.sprite = new Sprite(
                     item.x,
                     item.y,
-                    item.textureRegion,
+                    item.texture,
                     getVertexBufferObjectManager()
             );
-            // guarda referência do próprio item para recuperar no toque
+            // Guardamos o próprio item como userData para identificar no toque
             item.sprite.setUserData(item);
 
             scene.attachChild(item.sprite);
             scene.registerTouchArea(item.sprite);
         }
 
-        // listener único para todos os sprites
+        // Um único listener para todos
         scene.setOnAreaTouchListener(new IOnAreaTouchListener() {
             @Override
-            public boolean onAreaTouched(final TouchEvent event,
-                                         final ITouchArea area,
-                                         final float localX, final float localY) {
+            public boolean onAreaTouched(
+                    final TouchEvent event,
+                    final ITouchArea area,
+                    final float localX,
+                    final float localY
+            ) {
                 if (event.isActionDown() && area instanceof Sprite) {
                     final Object data = ((Sprite) area).getUserData();
                     if (data instanceof ItemDef) {
-                        playItemSound(((ItemDef) data));
+                        playItemSound((ItemDef) data);
                     }
                     return true;
                 }
@@ -210,7 +200,7 @@ public class SoundExample extends SimpleBaseGameActivity {
             }
         });
 
-        Debug.d("Cena criada com " + ITEMS.size() + " itens clicáveis.");
+        Debug.d("Cena criada com " + ITEMS.size() + " sprites clicáveis.");
         return scene;
     }
 
@@ -223,17 +213,12 @@ public class SoundExample extends SimpleBaseGameActivity {
             item.sound.play();
             Debug.d("Som reproduzido: " + item.soundFile);
         } else {
-            Debug.w("Som indisponível para " + item.imageFile);
-            showError("Som indisponível para este item.");
+            showError("Som não disponível para este item.");
         }
     }
 
     private void showInstructions() {
-        Toast.makeText(
-                this,
-                "🎮 Toque em qualquer imagem para ouvir seu som.",
-                Toast.LENGTH_LONG
-        ).show();
+        Toast.makeText(this, "🎮 Toque nas imagens para ouvir seus sons!", Toast.LENGTH_LONG).show();
     }
 
     private void showError(final String message) {
@@ -247,12 +232,14 @@ public class SoundExample extends SimpleBaseGameActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        // Libera sons
         for (ItemDef item : ITEMS) {
             if (item.sound != null && !item.sound.isReleased()) {
                 item.sound.release();
             }
         }
-        Debug.d("Recursos liberados.");
+        Debug.d("Recursos liberados");
     }
 }
 
