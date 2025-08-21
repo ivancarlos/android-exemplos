@@ -3,9 +3,8 @@ debug:
 	./new.debug.sh
 release:
 	./new.release.sh
-
 main:
-	./github.expect
+	./github.$@.expect
 push:
-	./github.push.expect
+	./github.$@.expect
 
