@@ -19,7 +19,6 @@ start:
 	adb shell am start -n $(PACKAGE)/$(MAINACTIVITY)
 stop:
 	adb shell am force-stop $(PACKAGE)
-
 clean:
 	$(ANT) clean
 
