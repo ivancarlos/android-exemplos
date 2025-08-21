@@ -1,6 +1,8 @@
 package org.andengine.examples;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.andengine.audio.sound.Sound;
 import org.andengine.audio.sound.SoundFactory;
@@ -16,8 +18,10 @@ import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.TextureOptions;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
+import org.andengine.opengl.texture.atlas.bitmap.BuildableBitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
+import org.andengine.opengl.texture.atlas.buildable.builder.BlackPawnTextureAtlasBuilder;
+import org.andengine.opengl.texture.atlas.buildable.builder.ITextureAtlasBuilder.TextureAtlasBuilderException;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.debug.Debug;
@@ -25,12 +29,9 @@ import org.andengine.util.debug.Debug;
 import android.widget.Toast;
 
 /**
- * Exemplo melhorado demonstrando reprodução de som no AndEngine
- *
- * Funcionalidades:
- * - Toque no tank para reproduzir som de explosão
- * - Tratamento de erros aprimorado
- * - Código mais organizado e documentado
+ * Várias imagens clicáveis, cada uma com um som diferente.
+ * - Defina seus itens na lista ITEMS (arquivo de imagem, arquivo de som, posição X/Y).
+ * - Não cria imagens nem áudios; apenas organiza o código.
  */
 public class SoundExample extends SimpleBaseGameActivity {
 
@@ -41,33 +42,58 @@ public class SoundExample extends SimpleBaseGameActivity {
     private static final int CAMERA_WIDTH = 720;
     private static final int CAMERA_HEIGHT = 480;
 
-    // Configurações de assets
+    // Pastas de assets
     private static final String GRAPHICS_PATH = "gfx/";
-    private static final String SOUNDS_PATH = "mfx/";
-    private static final String TANK_IMAGE = "tank.png";
-    private static final String EXPLOSION_SOUND = "explosion.ogg";
+    private static final String SOUNDS_PATH  = "mfx/";
 
-    // Configurações de textura
-    private static final int TEXTURE_ATLAS_WIDTH = 128;
-    private static final int TEXTURE_ATLAS_HEIGHT = 256;
+    // Tamanho do atlas (aumente se tiver muitas/maiores imagens)
+    private static final int ATLAS_WIDTH  = 1024;
+    private static final int ATLAS_HEIGHT = 1024;
 
-    // Cores (RGB normalizado)
-    private static final float BACKGROUND_RED = 0.09804f;   // Azul céu
-    private static final float BACKGROUND_GREEN = 0.6274f;
-    private static final float BACKGROUND_BLUE = 0.8784f;
+    // Cor de fundo
+    private static final float BG_R = 0.09804f;
+    private static final float BG_G = 0.6274f;
+    private static final float BG_B = 0.8784f;
 
     // ===========================================================
-    // CAMPOS DA CLASSE
+    // TIPOS/ESTRUTURAS
     // ===========================================================
 
-    private BitmapTextureAtlas mTextureAtlas;
-    private ITextureRegion mTankTextureRegion;
-    private Sound mExplosionSound;
+    /** Define um item clicável (imagem + som + posição) */
+    private static class ItemDef {
+        final String imageFile;
+        final String soundFile;
+        final float x;
+        final float y;
 
-    private Sprite mTankSprite;
+        // preenchidos em tempo de execução:
+        ITextureRegion textureRegion;
+        Sound sound;
+        Sprite sprite;
+
+        ItemDef(String imageFile, String soundFile, float x, float y) {
+            this.imageFile = imageFile;
+            this.soundFile = soundFile;
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    // Configure aqui os itens (exemplos; ajuste os nomes/posições aos seus arquivos)
+    private final List<ItemDef> ITEMS = new ArrayList<ItemDef>() {{
+        add(new ItemDef("tank.png",       "explosion.ogg",   100, 200));
+        add(new ItemDef("helicopter.png", "helicopter.ogg",  300, 120));
+        add(new ItemDef("jeep.png",       "horn.ogg",        520, 260));
+    }};
 
     // ===========================================================
-    // CONFIGURAÇÃO DO ENGINE
+    // CAMPOS
+    // ===========================================================
+
+    private BuildableBitmapTextureAtlas mTextureAtlas;
+
+    // ===========================================================
+    // ENGINE
     // ===========================================================
 
     @Override
@@ -77,20 +103,18 @@ public class SoundExample extends SimpleBaseGameActivity {
         final Camera camera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
 
         final EngineOptions engineOptions = new EngineOptions(
-            true, // VSync habilitado
-            ScreenOrientation.LANDSCAPE_FIXED,
-            new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT),
-            camera
+                true,
+                ScreenOrientation.LANDSCAPE_FIXED,
+                new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT),
+                camera
         );
 
-        // Habilitar sistema de áudio
         engineOptions.getAudioOptions().setNeedsSound(true);
-
         return engineOptions;
     }
 
     // ===========================================================
-    // CARREGAMENTO DE RECURSOS
+    // RECURSOS
     // ===========================================================
 
     @Override
@@ -99,184 +123,136 @@ public class SoundExample extends SimpleBaseGameActivity {
         loadSounds();
     }
 
-    /**
-     * Carrega texturas e sprites
-     */
     private void loadGraphics() {
         BitmapTextureAtlasTextureRegionFactory.setAssetBasePath(GRAPHICS_PATH);
 
-        this.mTextureAtlas = new BitmapTextureAtlas(
-            this.getTextureManager(),
-            TEXTURE_ATLAS_WIDTH,
-            TEXTURE_ATLAS_HEIGHT,
-            TextureOptions.BILINEAR
+        mTextureAtlas = new BuildableBitmapTextureAtlas(
+                getTextureManager(),
+                ATLAS_WIDTH,
+                ATLAS_HEIGHT,
+                TextureOptions.BILINEAR
         );
 
-        this.mTankTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
-            this.mTextureAtlas,
-            this,
-            TANK_IMAGE,
-            0, 0
-        );
-
-        this.mTextureAtlas.load();
-
-        Debug.d("Gráficos carregados com sucesso");
-    }
-
-    /**
-     * Carrega arquivos de áudio
-     */
-    private void loadSounds() {
-        SoundFactory.setAssetBasePath(SOUNDS_PATH);
+        // cria uma região de textura para cada imagem de item
+        for (ItemDef item : ITEMS) {
+            item.textureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
+                    mTextureAtlas, this, item.imageFile);
+        }
 
         try {
-            this.mExplosionSound = SoundFactory.createSoundFromAsset(
-                this.mEngine.getSoundManager(),
-                this,
-                EXPLOSION_SOUND
-            );
-            Debug.d("Sons carregados com sucesso");
-        } catch (final IOException e) {
-            Debug.e("Erro ao carregar som: " + EXPLOSION_SOUND, e);
-            showError("Erro ao carregar áudio. Verifique se o arquivo existe.");
+            // empacota as imagens no atlas automaticamente
+            mTextureAtlas.build(new BlackPawnTextureAtlasBuilder<BuildableBitmapTextureAtlas>(0, 1, 1));
+            mTextureAtlas.load();
+            Debug.d("Texturas carregadas/empacotadas.");
+        } catch (TextureAtlasBuilderException e) {
+            Debug.e("Falha ao construir atlas de texturas.", e);
+            showError("Erro ao carregar gráficos. Verifique os arquivos em /assets/gfx.");
         }
     }
 
+    private void loadSounds() {
+        SoundFactory.setAssetBasePath(SOUNDS_PATH);
+
+        for (ItemDef item : ITEMS) {
+            try {
+                item.sound = SoundFactory.createSoundFromAsset(
+                        getSoundManager(), this, item.soundFile);
+            } catch (IOException e) {
+                Debug.e("Erro ao carregar som: " + item.soundFile, e);
+                showError("Não foi possível carregar: " + item.soundFile);
+            }
+        }
+        Debug.d("Sons carregados.");
+    }
+
     // ===========================================================
-    // CRIAÇÃO DA CENA
+    // CENA
     // ===========================================================
 
     @Override
     public Scene onCreateScene() {
-        // Logger de FPS para debug
-        this.mEngine.registerUpdateHandler(new FPSLogger());
+        mEngine.registerUpdateHandler(new FPSLogger());
 
-        final Scene scene = createScene();
-        setupTankSprite(scene);
-        setupTouchHandling(scene);
-
-        return scene;
-    }
-
-    /**
-     * Cria e configura a cena principal
-     */
-    private Scene createScene() {
         final Scene scene = new Scene();
+        scene.setBackground(new Background(BG_R, BG_G, BG_B));
 
-        // Fundo azul céu
-        scene.setBackground(new Background(
-            BACKGROUND_RED,
-            BACKGROUND_GREEN,
-            BACKGROUND_BLUE
-        ));
+        // cria sprites para cada item
+        for (ItemDef item : ITEMS) {
+            if (item.textureRegion == null) continue;
 
-        return scene;
-    }
+            item.sprite = new Sprite(
+                    item.x,
+                    item.y,
+                    item.textureRegion,
+                    getVertexBufferObjectManager()
+            );
+            // guarda referência do próprio item para recuperar no toque
+            item.sprite.setUserData(item);
 
-    /**
-     * Configura e posiciona o sprite do tank
-     */
-    private void setupTankSprite(final Scene scene) {
-        if (this.mTankTextureRegion == null) {
-            Debug.e("Tank texture region não foi carregada!");
-            return;
+            scene.attachChild(item.sprite);
+            scene.registerTouchArea(item.sprite);
         }
 
-        // Centralizar tank na tela
-        final float centerX = (CAMERA_WIDTH - this.mTankTextureRegion.getWidth()) / 2f;
-        final float centerY = (CAMERA_HEIGHT - this.mTankTextureRegion.getHeight()) / 2f;
-
-        this.mTankSprite = new Sprite(
-            centerX,
-            centerY,
-            this.mTankTextureRegion,
-            this.getVertexBufferObjectManager()
-        );
-
-        scene.attachChild(this.mTankSprite);
-        Debug.d("Tank sprite criado na posição: (" + centerX + ", " + centerY + ")");
-    }
-
-    /**
-     * Configura o sistema de toque na tela
-     */
-    private void setupTouchHandling(final Scene scene) {
-        if (this.mTankSprite == null) {
-            Debug.e("Tank sprite não foi criado!");
-            return;
-        }
-
-        scene.registerTouchArea(this.mTankSprite);
+        // listener único para todos os sprites
         scene.setOnAreaTouchListener(new IOnAreaTouchListener() {
             @Override
-            public boolean onAreaTouched(
-                final TouchEvent pSceneTouchEvent,
-                final ITouchArea pTouchArea,
-                final float pTouchAreaLocalX,
-                final float pTouchAreaLocalY
-            ) {
-                if (pSceneTouchEvent.isActionDown()) {
-                    playExplosionSound();
+            public boolean onAreaTouched(final TouchEvent event,
+                                         final ITouchArea area,
+                                         final float localX, final float localY) {
+                if (event.isActionDown() && area instanceof Sprite) {
+                    final Object data = ((Sprite) area).getUserData();
+                    if (data instanceof ItemDef) {
+                        playItemSound(((ItemDef) data));
+                    }
+                    return true;
                 }
-                return true;
+                return false;
             }
         });
 
-        Debug.d("Sistema de toque configurado");
+        Debug.d("Cena criada com " + ITEMS.size() + " itens clicáveis.");
+        return scene;
     }
 
     // ===========================================================
-    // MÉTODOS AUXILIARES
+    // AUXILIARES
     // ===========================================================
 
-    /**
-     * Reproduz o som de explosão
-     */
-    private void playExplosionSound() {
-        if (this.mExplosionSound != null) {
-            this.mExplosionSound.play();
-            Debug.d("Som de explosão reproduzido");
+    private void playItemSound(final ItemDef item) {
+        if (item.sound != null) {
+            item.sound.play();
+            Debug.d("Som reproduzido: " + item.soundFile);
         } else {
-            Debug.w("Som de explosão não está disponível");
-            showError("Som não disponível");
+            Debug.w("Som indisponível para " + item.imageFile);
+            showError("Som indisponível para este item.");
         }
     }
 
-    /**
-     * Mostra instruções para o usuário
-     */
     private void showInstructions() {
         Toast.makeText(
-            this,
-            "🎮 Toque no tank para ouvir uma explosão!",
-            Toast.LENGTH_LONG
+                this,
+                "🎮 Toque em qualquer imagem para ouvir seu som.",
+                Toast.LENGTH_LONG
         ).show();
     }
 
-    /**
-     * Mostra mensagem de erro
-     */
     private void showError(final String message) {
         Toast.makeText(this, "❌ " + message, Toast.LENGTH_SHORT).show();
     }
 
     // ===========================================================
-    // LIMPEZA DE RECURSOS
+    // LIMPEZA
     // ===========================================================
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        // Limpar recursos de áudio
-        if (this.mExplosionSound != null) {
-            if (!this.mExplosionSound.isReleased()) {
-                this.mExplosionSound.release();
+        for (ItemDef item : ITEMS) {
+            if (item.sound != null && !item.sound.isReleased()) {
+                item.sound.release();
             }
         }
-
-        Debug.d("Recursos liberados");
+        Debug.d("Recursos liberados.");
     }
 }
+

@@ -85,6 +85,8 @@ arrow_head="path 'M 0,0
 width=$2
 height=$3
 
+color=$4
+
 # Centro do plano cartesiano
 center_x=$((width / 2))
 center_y=$((height / 2))
@@ -145,61 +147,11 @@ NARGUMENT=$(echo "scale=5; $ARGUMENT*-1" | bc -l)
 # ====================================
 
 convert -size ${width}x${height} \
-    xc:transparent \
+    xc:${color} \
     -depth 8 \
     -type TrueColorAlpha \
     -define png:color-type=6 \
     -draw "
-    # ==================
-    # EIXOS CARTESIANOS
-    # ==================
-
-    stroke gray70
-    stroke-width 1
-
-    # Eixo X (horizontal)
-    line ${line_opt["horizontal"]}
-
-    # Eixo Y (vertical)
-    line ${line_opt["vertical"]}
-
-    # ==================
-    # SETAS NOS EIXOS
-    # ==================
-
-    push graphic-context
-      stroke black
-      fill black
-      stroke-width 1
-
-      # Seta do eixo X (direita)
-      translate ${seta["horizontal"]}
-      ${arrow_head}
-
-      # Seta do eixo Y (cima)
-      translate ${seta["p1"]}
-      translate ${seta["p2"]}
-      rotate -90
-      ${arrow_head}
-    pop graphic-context
-
-    # ==================
-    # LABELS DOS EIXOS
-    # ==================
-
-    stroke none
-    fill black
-    font-size 28
-    text-antialias true
-
-    # Label X
-    text ${label["_X"]} 'X'
-
-    # Label Y
-    text ${label["_Y"]} 'Y'
-
-    # Origem (0,0)
-    text ${label["_O"]} '0'
 
     # ==================
     # CÍRCULO NO CENTRO
@@ -220,39 +172,6 @@ convert -size ${width}x${height} \
     circle ${center_x},${center_y} $((center_x + 10 * n++)),$((center_y + 10 * n++))
     circle ${center_x},${center_y} $((center_x + 10 * n++)),$((center_y + 10 * n++))
     circle ${center_x},${center_y} $((center_x + 10 * n++)),$((center_y + 10 * n++))
-
-    # ==================
-    # EXEMPLO DE USO
-    # ==================
-
-    push graphic-context
-      stroke blue
-      fill lightblue
-      stroke-width 2
-
-      # Vetor exemplo
-      translate ${center_x},${center_y}
-      line 0,0 100,-100
-      line 0,0 ${XL},${YL}
-
-      # Seta no final do vetor
-      translate ${XL},${YL}
-      rotate ${ARGUMENT}
-      ${arrow_head}
-
-      # Label do vetor
-      stroke none
-      fill blue
-      font-size 42
-
-      translate 0,0
-      text 10,10 'Com Ângulo'
-
-      rotate ${NARGUMENT}
-      translate 0,0
-      text 10,10 'Sem ângulo'
-
-    pop graphic-context
 
   " \
     -quality ${image_quality} \
