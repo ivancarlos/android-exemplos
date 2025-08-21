@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+SCRIPT_KEY_STORE_FILE=meu-release-key.keystore
+SCRIPT_KEY_ALIAS=minha-chave
+SCRIPT_KEY_STORE_PASSWORD=senha123
+SCRIPT_KEY_ALIAS_PASSWORD=senha123
+SCRIPT_JAVA=$SCRIPT_JAVA
+
 # Verificar se ANDROID_HOME está definido
 [ "$ANDROID_HOME" ] || {
     dialog --msgbox "ERRO: Defina a variável \$ANDROID_HOME\n\nExemplo:\nexport ANDROID_HOME=/home/ivan/Android/api/16/android-sdk-linux" 10 70
@@ -36,11 +42,28 @@ check_dependencies() {
 get_targets() {
     android list targets 2>/dev/null | grep -E "^id:|Name:|API level:" |
         awk '
-    /^id:/ { id = $2; getline; name = $0; getline; api = $0;
-             gsub(/^[ \t]*Name: /, "", name);
-             gsub(/^[ \t]*API level: /, "", api);
-             printf "%s \"%s (API %s)\" ", id, name, api }
-    '
+/^id:/ {
+    if (id != "") {
+        printf "%s \"%s%s\" \n", id, name, (api != "" ? " (API " api ")" : "")
+    }
+    id = $2
+    name = ""
+    api = ""
+}
+/^ *Name:/ {
+    sub(/^ *Name: /, "", $0)
+    name = $0
+}
+/^ *API level:/ {
+    sub(/^ *API level: /, "", $0)
+    api = $0
+}
+END {
+    if (id != "") {
+        printf "%s \"%s%s\" \n", id, name, (api != "" ? " (API " api ")" : "")
+    }
+}
+'
 }
 
 # Validar nome do projeto
@@ -96,21 +119,33 @@ main_menu() {
             6) list_targets ;;
             7) show_config ;;
             8) create_project ;;
-            9) exit 0 ;;
-            *) exit 0 ;;
+            9) break ;;
+            *) break ;;
         esac
     done
+
+    return 0 # Continua execução após menu
 }
 
 # Configurar target
 configure_target() {
-    local targets_list=$(get_targets)
-    if [ -z "$targets_list" ]; then
+    # Usa um array para preservar os pares id/descrição
+    IFS=$'\n' read -r -d '' -a targets_array < <(get_targets && printf '\0')
+
+    if [ ${#targets_array[@]} -eq 0 ]; then
         dialog --msgbox "ERRO: Não foi possível obter lista de targets.\nVerifique sua instalação do Android SDK." 8 60
         return
     fi
 
-    target=$(dialog --menu "Escolha o target Android:" 20 80 10 $targets_list 2>&1 >/dev/tty)
+    # Monta argumentos do menu como pares: id "description"
+    local menu_items=()
+    for item in "${targets_array[@]}"; do
+        id="${item%% *}"
+        desc="${item#* }"
+        menu_items+=("$id" "$desc")
+    done
+
+    target=$(dialog --menu "Escolha o target Android:" 20 80 10 "${menu_items[@]}" 2>&1 >/dev/tty)
 
     if [ -z "$target" ]; then
         target="$DEFAULT_TARGET"
@@ -124,14 +159,20 @@ configure_project_name() {
 
         if [ -z "$project_name" ]; then
             project_name="$DEFAULT_NAME"
-            break
         fi
 
-        if validate_project_name "$project_name"; then
-            break
-        else
+        if ! validate_project_name "$project_name"; then
             dialog --msgbox "ERRO: Nome inválido!\n\nO nome deve:\n- Começar com letra\n- Conter apenas letras, números e _\n- Não ter espaços" 10 50
+            continue
         fi
+
+        # Verifica se diretório com esse nome já existe
+        if [ -d "$PWD/$project_name" ]; then
+            dialog --msgbox "ERRO: Já existe um diretório com o nome '$project_name'.\nEscolha outro nome." 8 60
+            continue
+        fi
+
+        break
     done
 }
 
@@ -269,22 +310,22 @@ create_project() {
 #  'key.store' for the location of your keystore and
 #  'key.alias' for the name of the key to use.
 # The password will be asked during the build when you use the 'release' target.
-key.store= .keystore/meu-release-key.keystore
-key.alias= minha-chave
-key.store.password= senha123
-key.alias.password= senha123
+key.store= .keystore/$SCRIPT_KEY_STORE_FILE
+key.alias= $SCRIPT_KEY_ALIAS
+key.store.password= $SCRIPT_KEY_STORE_PASSWORD
+key.alias.password= $SCRIPT_KEY_ALIAS_PASSWORD
 
-java.source=1.7
-java.target=1.7
+java.source=$SCRIPT_JAVA
+java.target=$SCRIPT_JAVA
 EOF
         cat <<EOF >${project_path}/key.sh
 #!/usr/bin/env bash
 
 # Defina as variáveis de ambiente (ou passe diretamente)
-KEYSTORE_FILE="meu-release-key.keystore"
-ALIAS="minha-chave"
-KEYSTORE_PASS="\${KEYSTORE_PASS:-senha123}"
-KEY_PASS="\${KEY_PASS:-senha123}"
+KEYSTORE_FILE="$SCRIPT_KEY_STORE_FILE"
+ALIAS="$SCRIPT_KEY_ALIAS"
+KEYSTORE_PASS="\${KEYSTORE_PASS:-$SCRIPT_KEY_STORE_PASSWORD}"
+KEY_PASS="\${KEY_PASS:-$SCRIPT_KEY_ALIAS_PASSWORD}"
 VALIDITY_DAYS=10000
 
 # Identidade (dname): CN, OU, O, L, ST, C
@@ -308,10 +349,10 @@ EOF
         cat <<EOF >${project_path}/Makefile
 ANT = /usr/bin/ant
 
-KEYSTORE_FILE = .keystore/meu-release-key.keystore
-ALIAS         = minha-chave
-KEYSTORE_PASS = senha123
-KEY_PASS      = senha123
+KEYSTORE_FILE = .keystore/$SCRIPT_KEY_STORE_FILE
+ALIAS         = $SCRIPT_KEY_ALIAS
+KEYSTORE_PASS = $SCRIPT_KEY_STORE_PASSWORD
+KEY_PASS      = $SCRIPT_KEY_ALIAS_PASSWORD
 VALIDITY_DAYS = 10000
 
 # Identidade (dname): CN, OU, O, L, ST, C
@@ -353,17 +394,6 @@ key:
 	keytool  \$(KEYTOOL_OPT)
 
 EOF
-        # Perguntar se quer abrir o diretório
-        dialog --yesno "Abrir o diretório do projeto no gerenciador de arquivos?" 8 50
-        if [ $? -eq 0 ]; then
-            if command -v nautilus &>/dev/null; then
-                nautilus "$project_path" &
-            elif command -v dolphin &>/dev/null; then
-                dolphin "$project_path" &
-            elif command -v thunar &>/dev/null; then
-                thunar "$project_path" &
-            fi
-        fi
     else
         dialog --msgbox "ERRO: Falha ao criar projeto!\n\nVerifique:\n- Se o target existe\n- Se há permissões no diretório\n- Se o Android SDK está configurado" 10 60
     fi
@@ -389,5 +419,8 @@ Pressione ENTER para continuar..." 10 70
 
 # Iniciar interface
 main_menu
+
+echo "📁 Projeto disponível em: $project_name"
+echo "💡 Comando: 'cd $project_name'"
 
 exit 0
