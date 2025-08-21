@@ -144,7 +144,11 @@ NARGUMENT=$(echo "scale=5; $ARGUMENT*-1" | bc -l)
 # GERAÇÃO DA IMAGEM
 # ====================================
 
-convert -size ${width}x${height} xc:white \
+convert -size ${width}x${height} \
+    xc:transparent \
+    -depth 8 \
+    -type TrueColorAlpha \
+    -define png:color-type=6 \
     -draw "
     # ==================
     # EIXOS CARTESIANOS
