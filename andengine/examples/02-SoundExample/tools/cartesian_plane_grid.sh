@@ -258,4 +258,4 @@ echo "Plano cartesiano gerado: ${image_name}.${image_format}"
 
 ./imagemagick-grid ${image_name}.${image_format} ${image_name}_grid.${image_format}
 
-eog ${image_name}_grid.${image_format}
+echo eog ${image_name}_grid.${image_format}
