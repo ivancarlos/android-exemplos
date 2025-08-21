@@ -15,6 +15,8 @@ build: assets/gfx/tank.png
 assets/gfx/tank.png:
 	make -C tools tank
 
+deploy: build install start
+
 install:
 	$(ANT) installd
 uninstall:
