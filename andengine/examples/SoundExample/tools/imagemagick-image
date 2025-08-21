@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+# Definição dos elementos SVG
+vector_head="path 'M 0,0 l -15,-5 +5,+5 -5,+5 +15,-5 z'"
+indicator="path 'M 10,0 l +15,+5 -5,-5 +5,-5 -15,+5 m +10,0 +20,0'"
+
+# Configurações do círculo central
+declare -A center_circle
+center_circle[x]=10
+center_circle[y]=10
+radius=100
+
+# Dimensões da imagem
+width=800/2
+height=800/2
+
+# Gerar a imagem
+convert -size ${width}x${height} xc:white \
+    -draw "
+    stroke black
+    fill none
+    circle ${center_circle[x]},${center_circle[y]} $((center_circle[x] + radius)),$((center_circle[y] + radius))
+
+    push graphic-context
+      stroke blue
+      fill skyblue
+      translate 10,10
+      rotate 90
+      line 0,0 100,0
+      translate 200,0
+      ${vector_head}
+    pop graphic-context
+
+    push graphic-context
+      stroke firebrick
+      fill tomato
+      translate 20,50
+      rotate 40
+      ${indicator}
+      translate 40,0
+      rotate -40
+      stroke none
+      fill firebrick
+      text 3,6 'Center'
+    pop graphic-context
+  " \
+    output.png
+
+echo "Imagem gerada: output.png"
