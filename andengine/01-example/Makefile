@@ -3,7 +3,7 @@ ANT  =  /usr/bin/ant
 JENV =	$(LINUXBREW_HOME)/bin/jenv
 
 PACKAGE = org.andengine.examples
-MAINACTIVITY = .launcher.ExampleLauncher
+MAINACTIVITY = .SoundExample
 
 status:
 	$(ANT) -version
