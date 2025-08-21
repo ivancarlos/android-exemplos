@@ -20,5 +20,5 @@ start:
 stop:
 	adb shell am force-stop $(PACKAGE)
 clean:
-	$(ANT) clean
+	rm -rf bin/ libs/ gen/
 
