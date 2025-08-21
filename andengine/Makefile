@@ -10,7 +10,7 @@ local:
 	ln -s ../local.properties AndEngineSVGTextureRegionExtension/local.properties
 	ln -s ../local.properties AndEngineTexturePackerExtension/local.properties
 	ln -s ../local.properties AndEngineTMXTiledMapExtension/local.properties
-	ln -s ../../local.properties examples/SoundExample/local.properties
+	ln -s ../../local.properties examples/Wallpaper/local.properties
 
 clean:
 	rm AndEngine/local.properties
@@ -24,6 +24,6 @@ clean:
 	rm AndEngineSVGTextureRegionExtension/local.properties
 	rm AndEngineTexturePackerExtension/local.properties
 	rm AndEngineTMXTiledMapExtension/local.properties
-	rm examples/SoundExample/local.properties
+	rm examples/Wallpaper/local.properties
 
 
