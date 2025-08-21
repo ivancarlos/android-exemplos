@@ -1,4 +1,19 @@
-for d in */; do
-    cp local.properties $d
-done
+#for d in */; do
+#    echo cp local.properties $d
+#done
+
+
+cp local.properties AndEngine/
+cp local.properties AndEngineAugmentedRealityExtension/
+cp local.properties AndEngineExamples/
+cp local.properties AndEngineLiveWallpaperExtension/
+cp local.properties AndEngineMODPlayerExtension/
+cp local.properties AndEngineMultiplayerExtension/
+cp local.properties AndEnginePhysicsBox2DExtension/
+cp local.properties AndEngineScriptingExtension/
+cp local.properties AndEngineSVGTextureRegionExtension/
+cp local.properties AndEngineTexturePackerExtension/
+cp local.properties AndEngineTMXTiledMapExtension/
+cp local.properties examples/01-SoundExample/
+
 
