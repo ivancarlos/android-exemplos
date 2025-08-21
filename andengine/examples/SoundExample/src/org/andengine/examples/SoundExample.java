@@ -27,8 +27,7 @@ import org.andengine.util.debug.Debug;
 import android.widget.Toast;
 
 /**
- * 3 imagens clicáveis, cada uma com seu som.
- * Mantém o estilo do seu código original.
+ * Exemplo: 3 imagens lado a lado, cada uma com som próprio.
  */
 public class SoundExample extends SimpleBaseGameActivity {
 
@@ -42,46 +41,37 @@ public class SoundExample extends SimpleBaseGameActivity {
     private static final String GRAPHICS_PATH = "gfx/";
     private static final String SOUNDS_PATH  = "mfx/";
 
-    // Cores de fundo
-    private static final float BACKGROUND_RED   = 0.09804f;
-    private static final float BACKGROUND_GREEN = 0.6274f;
-    private static final float BACKGROUND_BLUE  = 0.8784f;
+    private static final float BG_R = 0.09804f;
+    private static final float BG_G = 0.6274f;
+    private static final float BG_B = 0.8784f;
+
+    private static final float PADDING_PX = 20f; // espaço entre imagens
 
     // ===========================================================
-    // ESTRUTURA PARA ITENS
+    // ESTRUTURA DE ITEM
     // ===========================================================
 
     private static class ItemDef {
         final String imageFile;
         final String soundFile;
-        final float x, y;
 
-        // preenchidos em runtime
         BitmapTextureAtlas atlas;
         ITextureRegion texture;
         Sound sound;
         Sprite sprite;
 
-        ItemDef(String imageFile, String soundFile, float x, float y) {
+        ItemDef(String imageFile, String soundFile) {
             this.imageFile = imageFile;
             this.soundFile = soundFile;
-            this.x = x;
-            this.y = y;
         }
     }
 
-    // Sua lista pedida: 3 imagens clicáveis
+    // 3 itens (imagens + sons)
     private final List<ItemDef> ITEMS = new ArrayList<ItemDef>() {{
-        add(new ItemDef("tank.png",       "explosion.ogg",   100, 200));
-        add(new ItemDef("helicopter.png", "helicopter.ogg",  300, 120));
-        add(new ItemDef("jeep.png",       "horn.ogg",        520, 260));
+        add(new ItemDef("tank2.png",      "explosion.ogg"));
+        add(new ItemDef("helicopter.png", "helicopter.ogg"));
+        add(new ItemDef("jeep.png",       "horn.ogg"));
     }};
-
-    // ===========================================================
-    // CAMPOS
-    // ===========================================================
-
-    // (removemos os campos únicos antigos e passamos a usar a lista ITEMS)
 
     // ===========================================================
     // ENGINE
@@ -92,7 +82,7 @@ public class SoundExample extends SimpleBaseGameActivity {
         showInstructions();
 
         final Camera camera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
-        final EngineOptions engineOptions = new EngineOptions(
+        EngineOptions engineOptions = new EngineOptions(
                 true,
                 ScreenOrientation.LANDSCAPE_FIXED,
                 new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT),
@@ -115,8 +105,6 @@ public class SoundExample extends SimpleBaseGameActivity {
     private void loadGraphics() {
         BitmapTextureAtlasTextureRegionFactory.setAssetBasePath(GRAPHICS_PATH);
 
-        // Para evitar BlackPawn builder, criamos 1 atlas por imagem.
-        // Tamanho 256x256 costuma servir para ícones médios; aumente se necessário.
         for (ItemDef item : ITEMS) {
             item.atlas = new BitmapTextureAtlas(
                     getTextureManager(),
@@ -124,15 +112,13 @@ public class SoundExample extends SimpleBaseGameActivity {
                     TextureOptions.BILINEAR
             );
 
-            // Posiciona a textura dentro do atlas no canto (0,0) de cada atlas
             item.texture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
                     item.atlas, this, item.imageFile, 0, 0
             );
 
             item.atlas.load();
         }
-
-        Debug.d("Gráficos carregados para " + ITEMS.size() + " itens.");
+        Debug.d("Gráficos carregados.");
     }
 
     private void loadSounds() {
@@ -148,7 +134,6 @@ public class SoundExample extends SimpleBaseGameActivity {
                 showError("Falha ao carregar " + item.soundFile);
             }
         }
-
         Debug.d("Sons carregados.");
     }
 
@@ -161,36 +146,49 @@ public class SoundExample extends SimpleBaseGameActivity {
         mEngine.registerUpdateHandler(new FPSLogger());
 
         final Scene scene = new Scene();
-        scene.setBackground(new Background(BACKGROUND_RED, BACKGROUND_GREEN, BACKGROUND_BLUE));
+        scene.setBackground(new Background(BG_R, BG_G, BG_B));
 
-        // Cria e posiciona os sprites
+        // calcular largura total
+        float totalWidth = 0f;
+        for (ItemDef item : ITEMS) {
+            if (item.texture != null) {
+                totalWidth += item.texture.getWidth();
+            }
+        }
+        if (ITEMS.size() > 1) {
+            totalWidth += PADDING_PX * (ITEMS.size() - 1);
+        }
+
+        float startX = (CAMERA_WIDTH - totalWidth) / 2f;
+        float currentX = startX;
+
+        // criar sprites lado a lado
         for (ItemDef item : ITEMS) {
             if (item.texture == null) continue;
 
+            float y = (CAMERA_HEIGHT - item.texture.getHeight()) / 2f;
+
             item.sprite = new Sprite(
-                    item.x,
-                    item.y,
+                    currentX,
+                    y,
                     item.texture,
                     getVertexBufferObjectManager()
             );
-            // Guardamos o próprio item como userData para identificar no toque
             item.sprite.setUserData(item);
 
             scene.attachChild(item.sprite);
             scene.registerTouchArea(item.sprite);
+
+            currentX += item.texture.getWidth() + PADDING_PX;
         }
 
-        // Um único listener para todos
+        // listener único
         scene.setOnAreaTouchListener(new IOnAreaTouchListener() {
             @Override
-            public boolean onAreaTouched(
-                    final TouchEvent event,
-                    final ITouchArea area,
-                    final float localX,
-                    final float localY
-            ) {
+            public boolean onAreaTouched(TouchEvent event, ITouchArea area,
+                                         float localX, float localY) {
                 if (event.isActionDown() && area instanceof Sprite) {
-                    final Object data = ((Sprite) area).getUserData();
+                    Object data = ((Sprite) area).getUserData();
                     if (data instanceof ItemDef) {
                         playItemSound((ItemDef) data);
                     }
@@ -200,7 +198,6 @@ public class SoundExample extends SimpleBaseGameActivity {
             }
         });
 
-        Debug.d("Cena criada com " + ITEMS.size() + " sprites clicáveis.");
         return scene;
     }
 
@@ -208,21 +205,23 @@ public class SoundExample extends SimpleBaseGameActivity {
     // AUXILIARES
     // ===========================================================
 
-    private void playItemSound(final ItemDef item) {
+    private void playItemSound(ItemDef item) {
         if (item.sound != null) {
             item.sound.play();
             Debug.d("Som reproduzido: " + item.soundFile);
         } else {
-            showError("Som não disponível para este item.");
+            showError("Som não disponível.");
         }
     }
 
     private void showInstructions() {
-        Toast.makeText(this, "🎮 Toque nas imagens para ouvir seus sons!", Toast.LENGTH_LONG).show();
+        Toast.makeText(this,
+                "🎮 Toque nas imagens para ouvir seus sons!",
+                Toast.LENGTH_LONG).show();
     }
 
-    private void showError(final String message) {
-        Toast.makeText(this, "❌ " + message, Toast.LENGTH_SHORT).show();
+    private void showError(String msg) {
+        Toast.makeText(this, "❌ " + msg, Toast.LENGTH_SHORT).show();
     }
 
     // ===========================================================
@@ -232,14 +231,12 @@ public class SoundExample extends SimpleBaseGameActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        // Libera sons
         for (ItemDef item : ITEMS) {
             if (item.sound != null && !item.sound.isReleased()) {
                 item.sound.release();
             }
         }
-        Debug.d("Recursos liberados");
+        Debug.d("Recursos liberados.");
     }
 }
 
