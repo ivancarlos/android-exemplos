@@ -1,8 +1,8 @@
 
 debug:
-	./new.debug.sh
+	./new.$@.sh
 release:
-	./new.release.sh
+	./new.$@.sh
 main:
 	./github.$@.expect
 push:
