@@ -1,0 +1,14 @@
+andengine/AndEngine/libs/armeabi-v7a/libandengine.so
+andengine/AndEngine/libs/armeabi/libandengine.so
+andengine/AndEngine/libs/x86/libandengine.so
+andengine/AndEngineMODPlayerExtension/libs/armeabi-v7a/libxmp.so
+andengine/AndEngineMODPlayerExtension/libs/armeabi/libxmp.so
+andengine/AndEngineMODPlayerExtension/libs/x86/libxmp.so
+andengine/AndEnginePhysicsBox2DExtension/libs/armeabi-v7a/libandenginephysicsbox2dextension.so
+andengine/AndEnginePhysicsBox2DExtension/libs/armeabi/libandenginephysicsbox2dextension.so
+andengine/AndEnginePhysicsBox2DExtension/libs/x86/libandenginephysicsbox2dextension.so
+andengine/AndEngineScriptingExtension/libs/armeabi-v7a/libandenginescriptingextension.so
+andengine/AndEngineScriptingExtension/libs/armeabi-v7a/libgnustl_shared.so
+andengine/AndEngineScriptingExtension/libs/armeabi/libandenginescriptingextension.so
+andengine/AndEngineScriptingExtension/libs/armeabi/libgnustl_shared.so
+
