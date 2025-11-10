@@ -34,9 +34,10 @@ clean:
 
 config:
 	ln -s AndEngineDebugDrawExtension-GLES2                          AndEngineDebugDrawExtension
+	# ln -s AndEngineDebugDrawExtension-GLES2-old-and-broken           AndEngineDebugDrawExtension
+
 	# ln -s AndEngineDebugDrawExtension-GLES2-AnchorCenter             AndEngineDebugDrawExtension
 	# ln -s AndEngineDebugDrawExtension-GLES2-AnchorCenter-latest-B2D  AndEngineDebugDrawExtension
 	# ln -s AndEngineDebugDrawExtension-GLES2-latest-B2D               AndEngineDebugDrawExtension
-	# ln -s AndEngineDebugDrawExtension-GLES2-old-and-broken           AndEngineDebugDrawExtension
 
 
