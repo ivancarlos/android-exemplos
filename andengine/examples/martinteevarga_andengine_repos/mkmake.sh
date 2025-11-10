@@ -9,6 +9,6 @@ echo        >> Makefile
 echo clean: >> Makefile
 ls -l | grep ^d| awk '{print "\trm "$9"/local.properties"}' >> Makefile
 
-make
+#make
 
 exit 0
