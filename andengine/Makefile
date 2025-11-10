@@ -1,4 +1,4 @@
-local:
+local: config
 	ln -s ../local.properties AndEngine/local.properties
 	ln -s ../local.properties AndEngineAugmentedRealityExtension/local.properties
 	ln -s ../local.properties AndEngineExamples/local.properties
@@ -30,4 +30,13 @@ clean:
 	rm examples/02-SoundExample/local.properties
 	rm examples/AndengineMarioEx/local.properties
 	rm AndEngineDebugDrawExtension/local.properties
+	rm AndEngineDebugDrawExtension
+
+config:
+	ln -s AndEngineDebugDrawExtension-GLES2                          AndEngineDebugDrawExtension
+	# ln -s AndEngineDebugDrawExtension-GLES2-AnchorCenter             AndEngineDebugDrawExtension
+	# ln -s AndEngineDebugDrawExtension-GLES2-AnchorCenter-latest-B2D  AndEngineDebugDrawExtension
+	# ln -s AndEngineDebugDrawExtension-GLES2-latest-B2D               AndEngineDebugDrawExtension
+	# ln -s AndEngineDebugDrawExtension-GLES2-old-and-broken           AndEngineDebugDrawExtension
+
 
