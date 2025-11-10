@@ -1,5 +1,7 @@
 Antes de rodar faça:
 
-. ./link-local
+```{bash}
+make
+```
 
 copia local.properties para as pastas de projeto
