@@ -1,0 +1,83 @@
+<project>
+    <!-- Your exisitng tasks if you have any -->
+    <target name="-pre-build" >
+        <antcall  target="using-ndk-build" />
+    </target>
+
+    <target name="using-ndk-build">
+        <exec executable="${ndk.dir}/ndk-build" failonerror="true">
+            <arg value="V=1"/>
+        </exec>
+    </target>
+
+    <target name="clean" depends="android_rules.clean">
+        <exec executable="${ndk.dir}/ndk-build" failonerror="true">
+            <arg value="clean"/>
+        </exec>
+    </target>
+
+    <!--
+    Remove end spaces
+    -->
+    <target name="remove-trailing-spaces">
+      <echo>
+          Remove Trailing Spaces.
+      </echo>
+      <apply executable="sed" failonerror="true">
+          <arg value="s/[ ]*$//" />
+          <arg value="-i" />
+          <fileset dir="src">
+              <include name="**/*.java" />
+          </fileset>
+      </apply>
+    </target>
+
+    <!--
+    Squeeze with SED.
+    -->
+    <target depends="remove-trailing-spaces" name="squeeze-blank">
+      <echo>
+          Suppress repeated empty output lines.
+      </echo>
+      <apply executable="sed" failonerror="true">
+          <arg value="/^$/N;/\n$/D" />
+          <arg value="-i" />
+          <fileset dir="src">
+              <include name="**/*.java" />
+          </fileset>
+      </apply>
+    </target>
+
+    <!--
+    Artistic Style 1.24
+    Maintained by: Jim Pattee
+    Original Author: Tal Davidson
+    -->
+    <target depends="squeeze-blank" name="indent">
+      <echo>
+          Indenting source code.
+      </echo>
+      <apply executable="astyle" failonerror="true">
+          <arg value="-A4" />
+          <arg value="-s4" />
+          <arg value="--indent=spaces=4" />
+          <arg value="-t4" />
+          <arg value="-S" />
+          <arg value="-N" />
+          <arg value="-L" />
+          <arg value="-w" />
+          <arg value="-U" />
+          <arg value="-F" />
+          <arg value="-p" />
+          <arg value="-H" />
+          <arg value="-j" />
+          <arg value="-y" />
+          <arg value="-k3" />
+          <arg value="-z2" />
+          <fileset dir="src">
+              <include name="**/*.java" />
+          </fileset>
+      </apply>
+    </target>
+
+</project>
