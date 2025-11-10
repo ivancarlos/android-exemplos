@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-cp Makefile.build AndEngineExamples/Makefile
+#cp Makefile.build AndEngineExamples/Makefile
 
 echo link: > Makefile
 ls -l | grep ^d| awk '{print "\tln -s ../local.properties " $9}' >> Makefile
