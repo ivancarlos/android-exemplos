@@ -1,15 +1,19 @@
 local: config
-	ln -s ../local.properties AndEngine/local.properties
-	ln -s ../local.properties AndEngineAugmentedRealityExtension/local.properties
-	ln -s ../local.properties AndEngineExamples/local.properties
-	ln -s ../local.properties AndEngineLiveWallpaperExtension/local.properties
-	ln -s ../local.properties AndEngineMODPlayerExtension/local.properties
-	ln -s ../local.properties AndEngineMultiplayerExtension/local.properties
-	ln -s ../local.properties AndEnginePhysicsBox2DExtension/local.properties
-	ln -s ../local.properties AndEngineScriptingExtension/local.properties
-	ln -s ../local.properties AndEngineSVGTextureRegionExtension/local.properties
-	ln -s ../local.properties AndEngineTexturePackerExtension/local.properties
-	ln -s ../local.properties AndEngineTMXTiledMapExtension/local.properties
+	ln -s ../local.properties AndEngine/
+	ln -s ../local.properties AndEngineAugmentedRealityExtension/
+	ln -s ../local.properties AndEngineExamples/
+	ln -s ../local.properties AndEngineLiveWallpaperExtension/
+	ln -s ../local.properties AndEngineMODPlayerExtension/
+	ln -s ../local.properties AndEngineMultiplayerExtension/
+	ln -s ../local.properties AndEnginePhysicsBox2DExtension/
+	ln -s ../local.properties AndEngineScriptingExtension/
+	ln -s ../local.properties AndEngineSVGTextureRegionExtension/
+	ln -s ../local.properties AndEngineTexturePackerExtension/
+	ln -s ../local.properties AndEngineTMXTiledMapExtension/
+	ln -s ../local.properties AndEngineRobotiumExtensionExample/
+	ln -s ../local.properties AndEngineRobotiumExtension/
+	ln -s ../local.properties AndEngineRobotiumExtensionExampleTest/
+
 	ln -s ../local.properties AndEngineDebugDrawExtension/local.properties
 	ln -s ../../local.properties examples/01-SoundExample/local.properties
 	ln -s ../../local.properties examples/02-SoundExample/local.properties
@@ -30,6 +34,9 @@ clean:
 	rm examples/02-SoundExample/local.properties
 	rm examples/AndengineMarioEx/local.properties
 	rm AndEngineDebugDrawExtension/local.properties
+	rm AndEngineRobotiumExtensionExample/local.properties
+	rm AndEngineRobotiumExtension/local.properties
+	rm AndEngineRobotiumExtensionExampleTest/local.properties
 	rm AndEngineDebugDrawExtension
 
 config:
