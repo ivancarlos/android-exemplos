@@ -1,0 +1,6 @@
+
+xenv
+echo $ANDROID_HOME
+make testsdk
+make keystore
+make
