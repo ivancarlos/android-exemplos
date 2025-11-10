@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<texture version="1" file="props.png" type="bitmap" width="234" height="398" pixelformat="RGBA_8888" minfilter="linear" magfilter="linear" wrapt="clamp" wraps="clamp" premultiplyalpha="false">
+    <!-- Created with TexturePacker http://texturepacker.com -->
+    <!-- $TexturePacker:SmartUpdate:8a6f49661e6ccb15af50f72031e28065$ -->
+    <textureregion id="0" src="seeds/seed_01.png" x="135" y="171" width="96" height="164" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="96" srcheight="164"/>
+    <textureregion id="1" src="seeds/seed_02.png" x="135" y="3" width="96" height="164" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="96" srcheight="164"/>
+    <textureregion id="2" src="snowman.png" x="3" y="267" width="128" height="128" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="128" srcheight="128"/>
+    <textureregion id="3" src="suns/sun_01.png" x="3" y="135" width="128" height="128" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="128" srcheight="128"/>
+    <textureregion id="4" src="suns/sun_02.png" x="3" y="3" width="128" height="128" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="128" srcheight="128"/>
+</texture>

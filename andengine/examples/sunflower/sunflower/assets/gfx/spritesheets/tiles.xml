@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<texture version="1" file="tiles.pkm" type="etc1" width="512" height="512" pixelformat="RGBA_8888" minfilter="linear" magfilter="linear" wrapt="clamp" wraps="clamp" premultiplyalpha="false">
+    <!-- Created with TexturePacker http://texturepacker.com -->
+    <!-- $TexturePacker:SmartUpdate:5f28f1a2ced6e8e605237975fe95e1fd$ -->
+    <textureregion id="0" src="grass.jpg" x="3" y="3" width="280" height="280" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="280" srcheight="280"/>
+</texture>
