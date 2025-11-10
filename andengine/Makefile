@@ -12,6 +12,7 @@ local:
 	ln -s ../local.properties AndEngineTMXTiledMapExtension/local.properties
 	ln -s ../../local.properties examples/01-SoundExample/local.properties
 	ln -s ../../local.properties examples/02-SoundExample/local.properties
+	ln -s ../../local.properties examples/AndengineMarioEx/local.properties
 
 clean:
 	rm AndEngine/local.properties
@@ -27,5 +28,6 @@ clean:
 	rm AndEngineTMXTiledMapExtension/local.properties
 	rm examples/01-SoundExample/local.properties
 	rm examples/02-SoundExample/local.properties
+	rm examples/AndengineMarioEx/local.properties
 
 
