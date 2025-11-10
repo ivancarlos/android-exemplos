@@ -10,10 +10,10 @@ local:
 	ln -s ../local.properties AndEngineSVGTextureRegionExtension/local.properties
 	ln -s ../local.properties AndEngineTexturePackerExtension/local.properties
 	ln -s ../local.properties AndEngineTMXTiledMapExtension/local.properties
+	ln -s ../local.properties AndEngineDebugDrawExtension/local.properties
 	ln -s ../../local.properties examples/01-SoundExample/local.properties
 	ln -s ../../local.properties examples/02-SoundExample/local.properties
 	ln -s ../../local.properties examples/AndengineMarioEx/local.properties
-
 clean:
 	rm AndEngine/local.properties
 	rm AndEngineAugmentedRealityExtension/local.properties
@@ -29,5 +29,5 @@ clean:
 	rm examples/01-SoundExample/local.properties
 	rm examples/02-SoundExample/local.properties
 	rm examples/AndengineMarioEx/local.properties
-
+	rm AndEngineDebugDrawExtension/local.properties
 
