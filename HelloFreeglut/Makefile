@@ -3,7 +3,7 @@ ANT  =  /usr/bin/ant
 JENV =	$(LINUXBREW_HOME)/bin/jenv
 
 PACKAGE = com.example.hellofreeglut
-MAINACTIVITY = .android.app.NativeActivity
+MAINACTIVITY = android.app.NativeActivity
 
 status:
 	$(ANT) -version
@@ -12,6 +12,7 @@ status:
 build:
 	$(ANT) debug
 install:
+	adb logcat -c
 	$(ANT) installd
 uninstall:
 	adb uninstall $(PACKAGE)
@@ -19,6 +20,9 @@ start:
 	adb shell am start -n $(PACKAGE)/$(MAINACTIVITY)
 stop:
 	adb shell am force-stop $(PACKAGE)
+log:
+	adb logcat | grep $(PACKAGE)
+
 clean:
 	$(ANT) clean
 
