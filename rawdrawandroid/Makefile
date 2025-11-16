@@ -19,7 +19,7 @@ SRC?=test.c
 #You can target something like Android 28, but if you set ANDROIDVERSION to say 22, then
 #Your app should (though not necessarily) support all the way back to Android 22.
 # android-16  android-30  android-34  android-35  android-36
-ANDROIDVERSION?=16
+ANDROIDVERSION?=21
 ANDROIDTARGET?=36
 CFLAGS?=-ffunction-sections -Os -fdata-sections -Wall -fvisibility=hidden
 LDFLAGS?=-Wl,--gc-sections -Wl,-Map=output.map -s
