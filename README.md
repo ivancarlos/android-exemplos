@@ -35,18 +35,18 @@ Desenvolver para Android 4.1 exige atenção a certas limitações técnicas, es
 
 Para criar e testar aplicativos nessa versão do Android, recomenda-se:
 
-1. **Android Studio antigo** com suporte ao SDK 16  
+1. **Android Studio antigo** com suporte ao SDK 16
    (ex: Android Studio 1.5 ~ 2.0)
 
-2. **Eclipse com ADT plugin**  
+2. **Eclipse com ADT plugin**
    Embora descontinuado, ainda pode ser utilizado em ambientes legados.
 
-3. **SDK Tools e Build Tools compatíveis**  
+3. **SDK Tools e Build Tools compatíveis**
    Certifique-se de ter instalado as versões específicas via Android SDK Manager:
    - Android SDK Platform 16
    - Build Tools 19.x ou anterior
 
-4. **Emulador x86 com imagem Android 4.1 (API 16)**  
+4. **Emulador x86 com imagem Android 4.1 (API 16)**
    Ou um **dispositivo físico antigo** com suporte à versão.
 
 ## 🧪 Primeiros passos
@@ -67,5 +67,6 @@ Para criar e testar aplicativos nessa versão do Android, recomenda-se:
 
 Este projeto celebra o desenvolvimento "retrô" no Android, resgatando práticas e ferramentas utilizadas na era do Jelly Bean.
 
+Desenvolvido por Ivan Lopes.
 Desenvolvido por Ivan Lopes.
 
